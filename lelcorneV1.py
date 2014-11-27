@@ -27,7 +27,7 @@ def jeu():
 
 	lelcorne = pygame.image.load("lelcorne.png")
 	lelcorneRect = lelcorne.get_rect()
-	lelcorneRect.move_ip([width/2-lelcorneRect.width/2, height - 100])
+	lelcorneRect.move_ip([width/2-lelcorneRect.width/2, height - lelcorneRect.height -10])
 	vitesse = 2
 	avanceDroite = False
 	avanceGauche = False
@@ -52,7 +52,7 @@ def jeu():
 	
 	mortFont = pygame.font.Font(None, 70)
 	couleurMort = pygame.color.Color("White")
-	mortText = "T mor. #REKT"
+	mortText = "#REKT"
 	mortImage = mortFont.render(mortText, True, couleurScore)
 	mortRect = mortImage.get_rect()
 	mortRect.move_ip([(width - mortFont.size(mortText)[0])/2, (height - mortFont.size(mortText)[1])/2])
@@ -165,6 +165,11 @@ def jeu():
 
 def menu():
 
+	## BG du menu 
+
+	bgMenu = pygame.image.load("bgmenu.png")
+	bgMenuRect = bgMenu.get_rect()
+
 	## Texte de lancement
 
 	jouerFont = pygame.font.Font(None, 50)
@@ -173,7 +178,7 @@ def menu():
 	jouerText = "Jouer ! (Entree)"
 	jouerImage = jouerFont.render(jouerText, True, couleurJouer)
 	jouerRect = jouerImage.get_rect()
-	jouerRect.move_ip([width/2, (height - jouerFont.size(jouerText)[1])/2])
+	jouerRect.move_ip([width - jouerFont.size(jouerText)[0], (height - jouerFont.size(jouerText)[1])/2])
 
 	jouer = False
 	
@@ -196,7 +201,8 @@ def menu():
 			jouerImage = jouerFont.render(jouerText, True, couleurJouer)
 	
 		screen.fill((255,255,255))
-	
+		
+		screen.blit(bgMenu, bgMenuRect)
 		screen.blit(jouerImage, jouerRect)
 	
 		pygame.display.flip()
