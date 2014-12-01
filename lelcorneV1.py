@@ -33,6 +33,11 @@ def jeu():
 	avanceGauche = False
 	mort = False
 	
+	## Bruit de la Lelcorne
+
+	bruit = pygame.mixer.Sound("lelcorne-sound.ogg")
+	bruit.set_volume(0.2)
+
 	## Parametres des sauces
 	
 	sauce = pygame.image.load("sauce.png")
@@ -59,6 +64,7 @@ def jeu():
 	
 	## Texte rejouer
 	
+	rejouer = False
 	rejouerFont = pygame.font.Font(None, 50)
 	couleurRejouer = pygame.color.Color("White")
 	couleurRejouerHover = pygame.color.Color("Red")
@@ -84,6 +90,8 @@ def jeu():
 					avanceGauche = False
 				if event.key == pygame.K_d:
 					avanceDroite = False
+				if event.key == pygame.K_r and mort:
+					rejouer = True
 				if event.key == pygame.K_ESCAPE:
 					sys.exit()
 			
@@ -123,6 +131,9 @@ def jeu():
 		scoreRect.move_ip([width - scoreFont.size(scoreText)[0] -5, height - scoreFont.size(scoreText)[1] -5])
 	
 		vitesseSauce = score/10 + 1
+
+		if score % 10 == 0 and score != 0:
+			bruit.play()
 	
 		screen.fill((0,0,0))
 			
@@ -141,9 +152,10 @@ def jeu():
 			screen.blit(scoreImage, scoreRect)
 		else:
 			screen.blit(scoreImage, scoreRect)
-			if collisionSourisRect(rejouerRect):
+			if collisionSourisRect(rejouerRect) or rejouer:
 				rejouerImage = rejouerFont.render(rejouerText, True, couleurRejouerHover)
-				if pygame.mouse.get_pressed()[0]:
+				if pygame.mouse.get_pressed()[0] or rejouer:
+					rejouer = False
 					mort = False
 					score = 0
 					spawnSauce = 0
@@ -154,6 +166,7 @@ def jeu():
 				rejouerImage = rejouerFont.render(rejouerText, True, couleurRejouer)
 			screen.blit(rejouerImage, rejouerRect)
 			screen.blit(mortImage, mortRect)
+			rejouer = False
 	
 		## On affiche maggle
 	
