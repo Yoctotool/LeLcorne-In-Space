@@ -12,7 +12,6 @@ screen = pygame.display.set_mode(size)
 
 def collisionSourisRect(rect):
 	return (pygame.mouse.get_pos()[0] > rect.left and pygame.mouse.get_pos()[0] < rect.right) and (pygame.mouse.get_pos()[1] > rect.top and pygame.mouse.get_pos()[1] < rect.bottom)
-
 ###
 ###
 ###
@@ -32,11 +31,18 @@ def jeu():
 	avanceDroite = False
 	avanceGauche = False
 	mort = False
+
+	## Parametres de l'anti-campeurs
+	tempsImmo = time.time()
+	interImmo = 2
+	anciennePos = -1
+	immo = False
 	
 	## Bruit de la Lelcorne
 
 	bruit = pygame.mixer.Sound("lelcorne-sound.ogg")
 	bruit.set_volume(0.2)
+	bruitClock = pygame.time.Clock()
 
 	## Parametres des sauces
 	
@@ -46,6 +52,11 @@ def jeu():
 	vitesseSauce = 2
 	spawnSauce = 0
 	listeSaucesSuppr = []
+
+	## Parametres de l'explosion
+	#expl = pygame.image.load("explosion.png")
+	#explRect = expl.get_rect()
+	
 	
 	## Texte de score
 	
@@ -55,6 +66,7 @@ def jeu():
 	
 	## Texte de mort
 	
+	tempsMort = 0
 	mortFont = pygame.font.Font(None, 70)
 	couleurMort = pygame.color.Color("White")
 	mortText = "#REKT"
@@ -74,9 +86,9 @@ def jeu():
 	rejouerRect.move_ip([(width - rejouerFont.size(rejouerText)[0])/2, height - mortRect.bottom + 50])
 
 	while 1:
-	
+
 		move = [0,0]
-		
+
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				sys.exit()
@@ -97,9 +109,9 @@ def jeu():
 			
 		## Mouvement du perso
 			
-		if avanceGauche and lelcorneRect.left > 0:
+		if avanceGauche and lelcorneRect.left > 0 and not(mort):
 			move[0] = - vitesse
-		if avanceDroite and lelcorneRect.right < width:
+		if avanceDroite and lelcorneRect.right < width and not(mort):
 			move[0] = vitesse
 					
 		lelcorneRect = lelcorneRect.move(move)
@@ -112,28 +124,48 @@ def jeu():
 			nouvelleSauce.move_ip([random.randint(0, width-nouvelleSauce.width), -nouvelleSauce.height])
 			listeSauces.append(nouvelleSauce)
 	
+		## Verif anti-campeurs
+
+		if anciennePos == lelcorneRect.left:
+			if not(immo):
+				tempsImmo = time.time()
+			immo = True
+		else:
+			immo = False
+			tempsImmo = time.time()
+		anciennePos = lelcorneRect.left
+
 		## Die Lelcorne!
 
 		for i in range(len(listeSauces)):
 			if listeSauces[i].bottom > lelcorneRect.top:
 				if (listeSauces[i].left >= lelcorneRect.left and listeSauces[i].left <= lelcorneRect.right) or (listeSauces[i].right >= lelcorneRect.left and listeSauces[i].right <= lelcorneRect.right):
 					mort = True
+					#tempsMort = time.time()
+					#explRect.move_ip([(abs(listeSauces[i].right - lelcorneRect.left)+explRect.right)/2, (abs(listeSauces[i].bottom - lelcorneRect.top)+explRect.bottom)/2])
 			if listeSauces[i].y > height:
 				listeSaucesSuppr.append(i)		
 			else:
 				listeSauces[i] = listeSauces[i].move([0, vitesseSauce])
 	
+		if time.time() - tempsImmo >= interImmo and immo:
+			mort = True
+
 		## MAJ du score
 	
 		scoreText = "Score : " + str(score)
 		scoreImage = scoreFont.render(scoreText, True, couleurScore)
 		scoreRect = scoreImage.get_rect()
 		scoreRect.move_ip([width - scoreFont.size(scoreText)[0] -5, height - scoreFont.size(scoreText)[1] -5])
-	
+
 		vitesseSauce = score/10 + 1
 
-		if score % 10 == 0 and score != 0:
+		if score % 10 == 0 and score != 0 and not(mort):
 			bruit.play()
+			bruitClock.tick()
+		bruitClock.tick()
+		if bruitClock.get_time() >= 3000:
+			bruit.stop()
 	
 		screen.fill((0,0,0))
 			
@@ -150,6 +182,7 @@ def jeu():
 					score += 1
 				listeSaucesSuppr = []
 			screen.blit(scoreImage, scoreRect)
+
 		else:
 			screen.blit(scoreImage, scoreRect)
 			if collisionSourisRect(rejouerRect) or rejouer:
@@ -161,7 +194,8 @@ def jeu():
 					spawnSauce = 0
 					listeSauces = []
 					listeSaucesSuppr = []
-	
+					immo = False
+
 			else:
 				rejouerImage = rejouerFont.render(rejouerText, True, couleurRejouer)
 			screen.blit(rejouerImage, rejouerRect)
@@ -222,7 +256,7 @@ def menu():
 
 	jeu()
 	
-## Action
+## Action !
 
 menu()
 		
